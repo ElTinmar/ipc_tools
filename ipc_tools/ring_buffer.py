@@ -108,7 +108,7 @@ class RingBuffer(QueueLike):
                 )
             self.read_cursor.value = (self.read_cursor.value  +  1) % self.num_items
 
-            t_lock_released = time.perf_counter_ns() * 1e-6
+        t_lock_released = time.perf_counter_ns() * 1e-6
 
         if self.local_logger:
             self.local_logger.info(f'get, {t_start}, {t_lock_acquired}, {t_lock_released}')
@@ -152,7 +152,7 @@ class RingBuffer(QueueLike):
             # update write cursor value
             self.write_cursor.value = (self.write_cursor.value  +  1) % self.num_items
 
-            t_lock_released = time.perf_counter_ns() * 1e-6
+        t_lock_released = time.perf_counter_ns() * 1e-6
 
         if self.local_logger:
             self.local_logger.info(f'put, {t_start}, {t_lock_acquired}, {t_lock_released}')
@@ -373,7 +373,7 @@ class ModifiableRingBuffer(QueueLike):
                 )
             self.read_cursor.value = (self.read_cursor.value  +  1) % self.num_items
 
-            t_lock_released = time.perf_counter_ns() * 1e-6
+        t_lock_released = time.perf_counter_ns() * 1e-6
 
         if self.local_logger:
             self.local_logger.info(f'get, {t_start}, {t_lock_acquired}, {t_lock_released}')
@@ -419,7 +419,7 @@ class ModifiableRingBuffer(QueueLike):
             # update write cursor value
             self.write_cursor.value = (self.write_cursor.value  +  1) % self.num_items
 
-            t_lock_released = time.perf_counter_ns() * 1e-6
+        t_lock_released = time.perf_counter_ns() * 1e-6
 
         if self.local_logger:
             self.local_logger.info(f'put, {t_start}, {t_lock_acquired}, {t_lock_released}')
