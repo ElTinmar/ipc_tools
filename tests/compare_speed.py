@@ -53,7 +53,7 @@ def do_nothing(array: NDArray) -> None:
     pass
 
 def average(array: NDArray) -> None:
-    mu = np.mean(array[0:512,0:512])
+    mu = np.median(array[0:512,0:512])
 
 def long_computation_mt(array: NDArray) -> None:
     # long multithreaded computation  
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
         # check execution time of processing functions
         for pfun in [do_nothing, average, long_computation_st, long_computation_mt]:
-            print(f'{pfun.__name__} : {timeit(lambda: pfun(BIGARRAY), number=10)} s')
+            print(f'{pfun.__name__} : {timeit(lambda: pfun(BIGARRAY), number=10)/10} s')
 
         for ncons in tqdm([1,5,10,25], desc="num consumers", position = 1, leave=False):
             for pfun in tqdm([do_nothing, average, long_computation_st, long_computation_mt], desc="proc function", position = 2, leave=False):
