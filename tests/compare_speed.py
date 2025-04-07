@@ -57,7 +57,7 @@ def average(array: NDArray) -> None:
 
 def long_computation_mt(array: NDArray) -> None:
     # long multithreaded computation  
-    U,S,V = np.linalg.svd(array[0:256,0:256])
+    U,S,V = np.linalg.svd(array[0:128,0:128])
 
 def long_computation_st(array: NDArray) -> None:
     # long single-threaded computation
