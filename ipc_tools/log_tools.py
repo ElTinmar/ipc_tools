@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt  
 import re
-from typing import List, Dict, Optional
+from typing import List, Dict
 from matplotlib import collections  as mc
 
 def parse_logs(filename: str) -> List[Dict]:
@@ -22,7 +22,6 @@ def parse_logs(filename: str) -> List[Dict]:
         entries = [e.groupdict() for e in log_entry.finditer(content)]
 
     return entries
-
 
 def plot_logs(filename: str) -> None:
     

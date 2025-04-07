@@ -2,9 +2,6 @@ from .queue_like import QueueLike
 from typing import Optional, Any, Tuple 
 from multiprocessing import Value
 import time
-
-
-# TODO: give the queue a logger, log put and get, and plot when the queue is busy
  
 class MonitoredQueue(QueueLike):
 

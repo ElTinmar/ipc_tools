@@ -7,10 +7,18 @@ import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from ipc_tools import MonitoredQueue, QueueMP, RingBuffer, ZMQ_PushPullArray
+from ipc_tools import MonitoredQueue, QueueMP, RingBuffer, ModifiableRingBuffer
+from arrayqueues import ArrayQueue
 from scipy.stats import mode
-from timeit import timeit
 from queue import Empty, Full
+
+class CompArrayQueue(ArrayQueue):
+
+    def put(self, element, block, timeout):
+        return super().put(element)
+
+    def get(self, block, timeout):
+        return super().get()
 
 def consumer(
         buf: MonitoredQueue, 
@@ -97,7 +105,7 @@ def run(
 if __name__ == '__main__':
 
     nprod = 1 # zmq direct push/pull and array queue support only one producer
-    reps = 1
+    reps = 5
     timing_data = pd.DataFrame(columns=['pfun','shm','ncons','fps_in','fps_out', 'frame_sz'])
 
     for SZ in tqdm([(512,512),(1024,1024),(2048,2048),(4096,4096)], desc="frame size", position = 0):
@@ -109,7 +117,7 @@ if __name__ == '__main__':
         #for pfun in [do_nothing, average, long_computation_st, long_computation_mt]:
         #    print(f'{pfun.__name__} : {timeit(lambda: pfun(BIGARRAY), number=10)} s')
 
-        for ncons in tqdm([1,2,3,4,5,10,25], desc="num consumers", position = 1, leave=False):
+        for ncons in tqdm([1,5,10,25], desc="num consumers", position = 1, leave=False):
             for pfun in tqdm([do_nothing, average, long_computation_st, long_computation_mt], desc="proc function", position = 2, leave=False):
                 for rep in tqdm(range(reps), desc="repetitions", position = 3, leave=False):
 
@@ -120,12 +128,11 @@ if __name__ == '__main__':
                                 item_shape = SZ,
                                 data_type = np.uint8
                             )),
-                        'ZMQ': MonitoredQueue(
-                            ZMQ_PushPullArray(
-                                item_shape = SZ,
-                                data_type = np.uint8,
-                                port = 5557
+                        'MRB': MonitoredQueue(
+                            ModifiableRingBuffer(
+                                num_bytes = 500*1024**2
                             )),
+                        'ArrayQueue': MonitoredQueue(CompArrayQueue(max_mbytes=500)),
                         'Queue': MonitoredQueue(QueueMP())
                     }
 

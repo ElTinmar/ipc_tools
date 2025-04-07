@@ -9,17 +9,15 @@ from multiprocessing_logger import Logger
 import pickle
 import ctypes
 
-# TODO make a buffer that blocks instead of overflowing 
-
-# TODO there is a problem with viewdata ?
-
 class RingBuffer(QueueLike):
     '''
     Simple circular buffer implementation, with the following features:
     - when the buffer is full it will overwrite unread content (overflow)
     - trying to get item from empty buffer can be either blocking (default) or non blocking (return None)
+    - supports multiple producers / consumers
     - only one process can access the buffer at a time, writing and reading share the same lock
     - to send multiple fields with heterogeneous type, one can use numpy's structured arrays
+    - elements have a fixed size
     '''
 
     def __init__(
@@ -219,7 +217,9 @@ class ModifiableRingBuffer(QueueLike):
     - when the buffer is full it will overwrite unread content (overflow)
     - trying to get item from empty buffer can be either blocking (default) or non blocking (return None)
     - only one process can access the buffer at a time, writing and reading share the same lock
+    - supports multiple producers / consumers
     - to send multiple fields with heterogeneous type, one can use numpy's structured arrays
+    - elements can be reshaped, buffer is reinitialized if array dtype changes
     '''
 
     DTYPE_ARRAY_LEN = 1024*1024
