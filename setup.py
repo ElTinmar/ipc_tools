@@ -4,7 +4,7 @@ setup(
     name='ipc_tools',
     author='Martin Privat',
     version='0.3.16',
-    packages=['ipc_tools','ipc_tools.tests'],
+    packages=['ipc_tools'],
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     description='share numpy arrays between processes',
     long_description=open('README.md').read(),
