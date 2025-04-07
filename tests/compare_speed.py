@@ -163,6 +163,7 @@ if __name__ == '__main__':
                         })
                         timing_data = pd.concat([timing_data, row], ignore_index=True)
 
+    # save and plot
     timing_data.to_csv(CSVFILE)
 
     g = sns.FacetGrid(
