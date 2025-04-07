@@ -106,7 +106,7 @@ def run(
 if __name__ == '__main__':
 
     nprod = 1 # array queue support only one producer
-    reps = 5
+    reps = 1
     timing_data = pd.DataFrame(columns=['pfun','shm','ncons','fps_in','fps_out', 'frame_sz'])
 
     buffers = {
