@@ -106,8 +106,9 @@ def run(
 if __name__ == '__main__':
 
     nprod = 1 # array queue support only one producer
-    reps = 1
+    reps = 5
     timing_data = pd.DataFrame(columns=['pfun','shm','ncons','fps_in','fps_out', 'frame_sz'])
+    CSVFILE = 'timings.csv'
 
     buffers = {
         'MRB': MonitoredQueue(
@@ -162,7 +163,7 @@ if __name__ == '__main__':
                         })
                         timing_data = pd.concat([timing_data, row], ignore_index=True)
 
-    print(timing_data)
+    timing_data.to_csv(CSVFILE)
 
     g = sns.FacetGrid(
         timing_data, 
