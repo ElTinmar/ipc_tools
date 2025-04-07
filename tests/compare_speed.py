@@ -53,7 +53,7 @@ def do_nothing(array: NDArray) -> None:
     pass
 
 def average(array: NDArray) -> None:
-    mu = np.mean(array)
+    mu = np.mean(array[0:512,0:512])
 
 def long_computation_mt(array: NDArray) -> None:
     # long multithreaded computation  
@@ -68,7 +68,7 @@ def run(
         processing_fun: Callable = do_nothing, 
         num_prod: int = 1, 
         num_cons: int = 1, 
-        t_measurement: float = 2.0,
+        t_measurement: float = 0.2,
         block_put: bool = False,
         timeout_put: float = 2.0,
         block_get: bool = False,
@@ -96,7 +96,7 @@ def run(
     # stop 
     stop.set()
 
-    time.sleep(1)
+    time.sleep(0.2)
 
     for p in processes:
         p.terminate()
@@ -110,26 +110,8 @@ if __name__ == '__main__':
     timing_data = pd.DataFrame(columns=['pfun','shm','ncons','fps_in','fps_out', 'frame_sz'])
     CSVFILE = 'timings.csv'
 
-    buffers = {
-        'MRB': MonitoredQueue(
-            ModifiableRingBuffer(
-                num_bytes = 500*1024**2
-            )),
-        'ArrayQueue': MonitoredQueue(CompArrayQueue(max_mbytes=500)),
-        'Queue': MonitoredQueue(QueueMP())
-    }
-
     for SZ in tqdm([(512,512),(1024,1024),(2048,2048),(4096,4096)], desc="frame size", position = 0):
 
-        buffers.update({
-            'Ring buffer': MonitoredQueue(
-                RingBuffer(
-                    num_items = 100, 
-                    item_shape = SZ,
-                    data_type = np.uint8
-                ))
-        })
-        
         BIGARRAY = np.random.randint(0, 255, SZ, dtype=np.uint8)
 
         # check execution time of processing functions
@@ -139,12 +121,29 @@ if __name__ == '__main__':
         for ncons in tqdm([1,5,10,25], desc="num consumers", position = 1, leave=False):
             for pfun in tqdm([do_nothing, average, long_computation_st, long_computation_mt], desc="proc function", position = 2, leave=False):
                 for rep in tqdm(range(reps), desc="repetitions", position = 3, leave=False):
+
+                    # reinitialize buffer to get proper fps readings
+                    buffers = {
+                        'MRB': MonitoredQueue(
+                            ModifiableRingBuffer(
+                                num_bytes = 500*1024**2
+                            )),
+                        'ArrayQueue': MonitoredQueue(CompArrayQueue(max_mbytes=500)),
+                        'Queue': MonitoredQueue(QueueMP()),
+                        'Ring buffer': MonitoredQueue(
+                            RingBuffer(
+                                num_items = 100, 
+                                item_shape = SZ,
+                                data_type = np.uint8
+                        ))
+                    }
+                    
                     for name, buf in tqdm(buffers.items(), desc="IPC type", position = 4, leave=False):
 
                         fps_in, fps_out = run(
                             buffer = buf, 
                             processing_fun = pfun, 
-                            t_measurement = 2,
+                            t_measurement = 0.2,
                             block_put = False,
                             timeout_put = 2.0,
                             block_get = True,
