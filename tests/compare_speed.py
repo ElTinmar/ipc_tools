@@ -9,6 +9,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from ipc_tools import MonitoredQueue, QueueMP, RingBuffer, ModifiableRingBuffer
 from arrayqueues import ArrayQueue
+from timeit import timeit
 from scipy.stats import mode
 from queue import Empty, Full
 
@@ -95,7 +96,7 @@ def run(
     # stop 
     stop.set()
 
-    time.sleep(2) # leave some time for locks to be released
+    #time.sleep(2) # leave some time for locks to be released
 
     for p in processes:
         p.terminate()
@@ -132,8 +133,8 @@ if __name__ == '__main__':
         max_size_MB = int(2000*np.prod(SZ)/(1024**2))
 
         # check execution time of processing functions
-        #for pfun in [do_nothing, average, long_computation_st, long_computation_mt]:
-        #    print(f'{pfun.__name__} : {timeit(lambda: pfun(BIGARRAY), number=10)} s')
+        for pfun in [do_nothing, average, long_computation_st, long_computation_mt]:
+            print(f'{pfun.__name__} : {timeit(lambda: pfun(BIGARRAY), number=10)} s')
 
         for ncons in tqdm([1,5,10,25], desc="num consumers", position = 1, leave=False):
             for pfun in tqdm([do_nothing, average, long_computation_st, long_computation_mt], desc="proc function", position = 2, leave=False):
@@ -163,7 +164,7 @@ if __name__ == '__main__':
                         timing_data = pd.concat([timing_data, row], ignore_index=True)
 
     print(timing_data)
-    
+
     g = sns.FacetGrid(
         timing_data, 
         col="pfun", 
