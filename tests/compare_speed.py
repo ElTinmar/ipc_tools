@@ -130,7 +130,6 @@ if __name__ == '__main__':
         })
         
         BIGARRAY = np.random.randint(0, 255, SZ, dtype=np.uint8)
-        max_size_MB = int(2000*np.prod(SZ)/(1024**2))
 
         # check execution time of processing functions
         for pfun in [do_nothing, average, long_computation_st, long_computation_mt]:
