@@ -96,6 +96,8 @@ def run(
     # stop 
     stop.set()
 
+    time.sleep(1)
+
     for p in processes:
         p.terminate()
 
