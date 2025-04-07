@@ -96,8 +96,6 @@ def run(
     # stop 
     stop.set()
 
-    #time.sleep(2) # leave some time for locks to be released
-
     for p in processes:
         p.terminate()
 
@@ -105,7 +103,7 @@ def run(
 
 if __name__ == '__main__':
 
-    nprod = 1 # zmq direct push/pull and array queue support only one producer
+    nprod = 1 # array queue support only one producer
     reps = 5
     timing_data = pd.DataFrame(columns=['pfun','shm','ncons','fps_in','fps_out', 'frame_sz'])
 
