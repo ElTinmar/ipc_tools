@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from ipc_tools import RingBuffer, ModifiableRingBuffer
 from multiprocessing import Process, Manager
-from queue import Empty
+from queue import Empty, Full
 import time
 
 SZ = (1024, 1024)
@@ -89,6 +89,16 @@ class TestModifiableRingBuffer(unittest.TestCase):
         items = [self.ring.get()[0] for _ in range(self.ring.qsize())]
         self.assertEqual(items[-1], capacity + 4)  # last inserted item should be last retrieved
 
+    def test_put_large_item(self):
+        large_item = np.ones(self.buffer_size + 1, dtype=np.float32)  
+        with self.assertRaises(Full): 
+            self.ring.put(large_item)  
+
+    def test_put_large_item_qsize(self):
+        large_item = np.ones(self.buffer_size + 1, dtype=np.float32)  
+        self.ring.put(large_item)  
+        self.assertEqual(self.ring.qsize(), 0)
+
     def test_different_shapes(self):
         a = np.ones((4,), dtype=np.int32)
         self.ring.put(a)
@@ -127,6 +137,9 @@ class TestModifiableRingBuffer(unittest.TestCase):
         self.assertEqual(self.ring.qsize(), 2)
         _ = self.ring.get()
         self.assertEqual(self.ring.qsize(), 1)
+
+    def test_qsize_empty(self):
+        self.assertIsNone(self.ring.qsize())
 
     def test_clear(self):
         a = np.ones((4,), dtype=np.float32)
