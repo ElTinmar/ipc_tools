@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from ipc_tools import ModifiableRingBuffer 
 from multiprocessing.synchronize import Event as EventType
 
-NUM_PRODUCERS = 1
-NUM_CONSUMERS = 1
+NUM_PRODUCERS = 5
+NUM_CONSUMERS = 20
 BUFFER_SIZE_BYTES = 500 * 1024**2
 ITEM_SHAPE = (2048, 2048)
 DTYPE = np.float32
@@ -60,7 +60,7 @@ def run_test():
     time.sleep(RUNTIME_SEC)
     stop_event.set()
 
-    time.sleep(2)
+    time.sleep(10)
 
     # Collect stats
     put_times = []
