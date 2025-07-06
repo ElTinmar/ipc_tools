@@ -239,7 +239,7 @@ class ModifiableRingBuffer(QueueLike):
         self.shape_array = RawArray('Q', self.SHAPE_ARRAY_LEN)
         self.shape_array_len = RawValue('I',0)
 
-        self.element_type = None
+        self.element_type = None 
         self.element_shape = None
         self.element_byte_size = None
         self.num_items = None
@@ -268,8 +268,10 @@ class ModifiableRingBuffer(QueueLike):
 
         modified = False
 
+        self.load_array_metadata()
+
         new_type = element.dtype
-        if new_type != self.element_type:
+        if new_type != self.element_type: 
             dtypestr = pickle.dumps(element.dtype)
             self.dtype_str_len.value = len(dtypestr)
             if self.dtype_str_len.value > self.DTYPE_ARRAY_LEN:
@@ -279,7 +281,7 @@ class ModifiableRingBuffer(QueueLike):
             modified = True
 
         new_shape = np.asarray(element.shape, dtype='Q')
-        if not np.array_equal(new_shape, self.element_shape):
+        if not np.array_equal(new_shape, self.element_shape): 
             new_shape = np.asarray(element.shape, dtype='Q')
             self.shape_array_len.value = len(new_shape)
             if self.shape_array_len.value > self.SHAPE_ARRAY_LEN:
