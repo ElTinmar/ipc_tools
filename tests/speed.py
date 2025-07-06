@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from ipc_tools import ModifiableRingBuffer 
 from multiprocessing.synchronize import Event as EventType
 import sys
+from perf_bench import memory_bandwidth
 
 NUM_PRODUCERS = 1
 NUM_CONSUMERS = 1
@@ -105,4 +106,5 @@ def run_test():
     plt.show()
 
 if __name__ == "__main__":
+    memory_bandwidth()
     run_test()
