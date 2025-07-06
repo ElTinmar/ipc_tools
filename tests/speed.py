@@ -4,14 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ipc_tools import ModifiableRingBuffer 
 from multiprocessing.synchronize import Event as EventType
+import sys
+from perf_bench import single_threaded_memory_bandwidth, multithreaded_memory_bandwidth
 
 NUM_PRODUCERS = 1
 NUM_CONSUMERS = 1
 BUFFER_SIZE_BYTES = 500 * 1024**2
-ITEM_SHAPE = (2048, 2048)
+ITEM_SHAPE = (4096, 4096)
 DTYPE = np.float32
 RUNTIME_SEC = 10
 LOGGING = False
+ITEM_SIZE_BYTES = np.prod(ITEM_SHAPE, dtype=np.float32) * np.dtype(DTYPE).itemsize # make sure bigger than L3 cache
 
 def producer(buffer: ModifiableRingBuffer, stop: EventType, stats: Queue):
     times = []
@@ -20,6 +23,8 @@ def producer(buffer: ModifiableRingBuffer, stop: EventType, stats: Queue):
         try:
             t0 = time.perf_counter()
             buffer.put(item)
+            if sys.platform == "linux":
+                time.sleep(1e-6) # leave some time for consumer
             t1 = time.perf_counter()
             times.append(t1 - t0)
         except Exception as e:
@@ -46,7 +51,6 @@ def run_test():
 
     buffer = ModifiableRingBuffer(
         num_bytes=BUFFER_SIZE_BYTES,
-        t_refresh=1e-6,
         copy=False,
         name='benchmark_buffer',
     )
@@ -61,7 +65,7 @@ def run_test():
     time.sleep(RUNTIME_SEC)
     stop_event.set()
 
-    time.sleep(2)
+    time.sleep(10)
 
     # Collect stats
     put_times = []
@@ -85,7 +89,8 @@ def run_test():
         print(f"  Count: {len(times)}")
         print(f"  Mean:  {np.mean(times)*1000:.3f} ms")
         print(f"  Std:   {np.std(times)*1000:.3f} ms")
-        print(f"  Rate:  {len(times)/RUNTIME_SEC:.2f} ops/sec\n")
+        print(f"  Rate:  {len(times)/RUNTIME_SEC:.2f} ops/sec")
+        print(f"  Throughput:  {1e-6 * (len(times)*ITEM_SIZE_BYTES)/RUNTIME_SEC:.2f} MB/s\n")
 
     print("\n--- Performance Summary ---")
     summarize("Producer put()", put_times)
@@ -101,4 +106,6 @@ def run_test():
     plt.show()
 
 if __name__ == "__main__":
+    single_threaded_memory_bandwidth(array_shape = ITEM_SHAPE) 
+    multithreaded_memory_bandwidth(array_shape = ITEM_SHAPE, num_threads=4)
     run_test()

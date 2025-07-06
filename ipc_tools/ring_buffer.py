@@ -1,4 +1,4 @@
-from multiprocessing import RawArray, RawValue, RLock
+from multiprocessing import RawArray, RawValue, RLock, Semaphore
 from .queue_like import QueueLike
 from typing import Optional
 import numpy as np
@@ -25,7 +25,6 @@ class RingBuffer(QueueLike):
             num_items: int,
             data_type: DTypeLike,
             item_shape: ArrayLike = (1,),
-            t_refresh: float = 1e-6,
             copy: bool = False,
             name: str = '',
             logger: Optional[Logger] = None
@@ -33,7 +32,6 @@ class RingBuffer(QueueLike):
         
         self.item_shape = np.asarray(item_shape)
         self.element_type = np.dtype(data_type)
-        self.t_refresh = t_refresh
         self.copy = copy
         self.name = name
         self.logger = logger
@@ -48,37 +46,26 @@ class RingBuffer(QueueLike):
         self.total_size =  self.item_num_element * self.num_items
         
         self.lock = RLock()
+        self.semaphore = Semaphore(0)
         self.read_cursor = RawValue('I',0)
         self.write_cursor = RawValue('I',0)
         self.num_lost_item = RawValue('I',0)
         self.data = RawArray('B', self.total_size*self.element_byte_size) 
         
-    def get(self, block: bool = True, timeout: Optional[float] = None) -> Optional[NDArray]:
+    def get(self, block: bool = True, timeout: Optional[float] = None) -> NDArray:
         '''return buffer to the current read location'''
 
-        if timeout is None:
-            # stay compliant with the Queue interface
-            timeout = float('inf')
-
         if block:
-            array = None
-            deadline = time.monotonic() + timeout
-
-            while (array is None): 
-                
-                if time.monotonic() > deadline:
-                    raise Empty
-                
-                array = self.get_noblock()
-                if array is None:
-                    time.sleep(self.t_refresh)
-
-            return array
-        
+            acquired = self.semaphore.acquire(timeout=timeout)
+            if not acquired:
+                raise Empty
         else:
-            return self.get_noblock()
+            if not self.semaphore.acquire(block=False):
+                raise Empty
+            
+        return self._get_noblock()
 
-    def get_noblock(self) -> Optional[NDArray]:
+    def _get_noblock(self) -> Optional[NDArray]:
         '''return data at the current read location'''
         
         t_start = time.perf_counter_ns() * 1e-6
@@ -111,9 +98,6 @@ class RingBuffer(QueueLike):
         if self.local_logger:
             self.local_logger.info(f'get, {t_start}, {t_lock_acquired}, {t_lock_released}')
 
-        # this seems to be necessary to give time to other workers to get the lock 
-        time.sleep(self.t_refresh)
-        
         return element.reshape(self.item_shape)
     
     def put(self, element: ArrayLike, block: Optional[bool] = True, timeout: Optional[float] = None) -> None:
@@ -150,13 +134,11 @@ class RingBuffer(QueueLike):
             # update write cursor value
             self.write_cursor.value = (self.write_cursor.value  +  1) % self.num_items
 
+        self.semaphore.release()
         t_lock_released = time.perf_counter_ns() * 1e-6
 
         if self.local_logger:
             self.local_logger.info(f'put, {t_start}, {t_lock_acquired}, {t_lock_released}')
-
-        # this seems to be necessary to give time to other workers to get the lock 
-        time.sleep(self.t_refresh)
 
     def full(self):
         ''' check if buffer is full '''
@@ -228,14 +210,12 @@ class ModifiableRingBuffer(QueueLike):
     def __init__(
             self,
             num_bytes: int,
-            t_refresh: float = 1e-6,
             copy: bool = False,
             name: str = '',
             logger: Optional[Logger] = None
         ):
         
         self.num_bytes = num_bytes
-        self.t_refresh = t_refresh
         self.copy = copy
         self.name = name
         self.logger = logger
@@ -245,6 +225,7 @@ class ModifiableRingBuffer(QueueLike):
 
         # used to share the data
         self.lock = RLock()
+        self.semaphore = Semaphore(0)
         self.read_cursor = RawValue('I',0)
         self.write_cursor = RawValue('I',0)
         self.num_lost_item = RawValue('I',0)
@@ -258,7 +239,7 @@ class ModifiableRingBuffer(QueueLike):
         self.shape_array = RawArray('Q', self.SHAPE_ARRAY_LEN)
         self.shape_array_len = RawValue('I',0)
 
-        self.element_type = None
+        self.element_type = None 
         self.element_shape = None
         self.element_byte_size = None
         self.num_items = None
@@ -287,8 +268,10 @@ class ModifiableRingBuffer(QueueLike):
 
         modified = False
 
+        self.load_array_metadata()
+
         new_type = element.dtype
-        if new_type != self.element_type:
+        if new_type != self.element_type: 
             dtypestr = pickle.dumps(element.dtype)
             self.dtype_str_len.value = len(dtypestr)
             if self.dtype_str_len.value > self.DTYPE_ARRAY_LEN:
@@ -298,7 +281,7 @@ class ModifiableRingBuffer(QueueLike):
             modified = True
 
         new_shape = np.asarray(element.shape, dtype='Q')
-        if not np.array_equal(new_shape, self.element_shape):
+        if not np.array_equal(new_shape, self.element_shape): 
             new_shape = np.asarray(element.shape, dtype='Q')
             self.shape_array_len.value = len(new_shape)
             if self.shape_array_len.value > self.SHAPE_ARRAY_LEN:
@@ -317,32 +300,20 @@ class ModifiableRingBuffer(QueueLike):
                 self.write_cursor.value = 0
                 self.num_lost_item.value = 0
         
-    def get(self, block: bool = True, timeout: Optional[float] = None) -> Optional[NDArray]:
+    def get(self, block: bool = True, timeout: Optional[float] = None) -> NDArray:
         '''return buffer to the current read location'''
 
-        if timeout is None:
-            # stay compliant with the Queue interface
-            timeout = float('inf')
-
         if block:
-            array = None
-            deadline = time.monotonic() + timeout
-
-            while (array is None): 
-                
-                if time.monotonic() > deadline:
-                    raise Empty
-                
-                array = self.get_noblock()
-                if array is None:
-                    time.sleep(self.t_refresh)
-
-            return array
-        
+            acquired = self.semaphore.acquire(timeout=timeout)
+            if not acquired:
+                raise Empty
         else:
-            return self.get_noblock()
+            if not self.semaphore.acquire(block=False):
+                raise Empty
+            
+        return self._get_noblock()
 
-    def get_noblock(self) -> Optional[NDArray]:
+    def _get_noblock(self) -> Optional[NDArray]:
         '''return data at the current read location'''
         
         t_start = time.perf_counter_ns() * 1e-6
@@ -377,9 +348,6 @@ class ModifiableRingBuffer(QueueLike):
 
         if self.local_logger:
             self.local_logger.info(f'get, {t_start}, {t_lock_acquired}, {t_lock_released}')
-
-        # this seems to be necessary to give time to other workers to get the lock 
-        time.sleep(self.t_refresh)
         
         return element.reshape(self.element_shape)
     
@@ -419,13 +387,11 @@ class ModifiableRingBuffer(QueueLike):
             # update write cursor value
             self.write_cursor.value = (self.write_cursor.value  +  1) % self.num_items
 
+        self.semaphore.release()
         t_lock_released = time.perf_counter_ns() * 1e-6
 
         if self.local_logger:
             self.local_logger.info(f'put, {t_start}, {t_lock_acquired}, {t_lock_released}')
-
-        # this seems to be necessary to give time to other workers to get the lock 
-        time.sleep(self.t_refresh)
 
     def full(self):
         ''' check if buffer is full '''
@@ -503,7 +469,6 @@ if __name__ == '__main__':
         num_bytes=1024,
         logger = None,
         name = '',
-        t_refresh=0.0001
     )
     
     def test(mrb):
