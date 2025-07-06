@@ -10,7 +10,7 @@ from perf_bench import memory_bandwidth
 NUM_PRODUCERS = 1
 NUM_CONSUMERS = 1
 BUFFER_SIZE_BYTES = 500 * 1024**2
-ITEM_SHAPE = (2048, 2048)
+ITEM_SHAPE = (4096, 4096)
 DTYPE = np.float32
 RUNTIME_SEC = 10
 LOGGING = False
@@ -106,5 +106,5 @@ def run_test():
     plt.show()
 
 if __name__ == "__main__":
-    memory_bandwidth()
+    memory_bandwidth(array_shape = (4096, 4096)) # make sure bigger than L3 cache
     run_test()
