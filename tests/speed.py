@@ -106,6 +106,6 @@ def run_test():
     plt.show()
 
 if __name__ == "__main__":
-    single_threaded_memory_bandwidth(array_shape = (4096, 4096)) # make sure bigger than L3 cache
-    multithreaded_memory_bandwidth(array_shape = (4096, 4096), num_threads=4)
+    single_threaded_memory_bandwidth(array_shape = ITEM_SHAPE) # make sure bigger than L3 cache
+    multithreaded_memory_bandwidth(array_shape = ITEM_SHAPE, num_threads=4)
     run_test()
