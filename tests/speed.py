@@ -46,7 +46,6 @@ def run_test():
 
     buffer = ModifiableRingBuffer(
         num_bytes=BUFFER_SIZE_BYTES,
-        t_refresh=1e-6,
         copy=False,
         name='benchmark_buffer',
     )
