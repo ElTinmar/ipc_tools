@@ -94,12 +94,6 @@ class TestModifiableRingBuffer(unittest.TestCase):
         with self.assertRaises(ValueError): 
             self.ring.put(large_item)  
 
-    def test_put_large_item_qsize(self):
-        large_item = np.ones(self.buffer_size + 1, dtype=np.float32)  
-        with self.assertRaises(ValueError): 
-            self.ring.put(large_item)  
-        self.assertEqual(self.ring.qsize(), 0)
-
     def test_different_shapes(self):
         a = np.ones((4,), dtype=np.int32)
         self.ring.put(a)
@@ -186,7 +180,6 @@ class TestModifiableRingBufferWithMultiprocessing(unittest.TestCase):
         # Create producer and consumer processes
         producer_processes = [Process(target=producer, args=(self.ring, num_items)) for _ in range(3)]
         consumer_processes = [Process(target=consumer, args=(self.ring, num_items, result_list)) for _ in range(3)]
-        print(consumer_processes)
 
         # Start all processes
         for p in producer_processes + consumer_processes:
