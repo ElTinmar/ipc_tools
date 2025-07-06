@@ -66,7 +66,7 @@ class TestModifiableRingBuffer(unittest.TestCase):
 
     def setUp(self):
         self.buffer_size = 1024 * 64  # 64 KB
-        self.ring = ModifiableRingBuffer(num_bytes=self.buffer_size, t_refresh=1e-4, copy=True)
+        self.ring = ModifiableRingBuffer(num_bytes=self.buffer_size, copy=True)
 
     def test_put_and_get_single(self):
         data = np.array([1, 2, 3, 4], dtype=np.float32)
@@ -163,7 +163,7 @@ class TestModifiableRingBufferWithMultiprocessing(unittest.TestCase):
 
     def setUp(self):
         self.buffer_size = 1024 * 64  # 64 KB
-        self.ring = ModifiableRingBuffer(num_bytes=self.buffer_size, t_refresh=1e-4, copy=True)
+        self.ring = ModifiableRingBuffer(num_bytes=self.buffer_size, copy=True)
 
     def test_multiprocess_put_and_get(self):
         """Test the buffer with multiple producers and consumers."""
