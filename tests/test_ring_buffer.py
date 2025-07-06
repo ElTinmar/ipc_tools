@@ -91,12 +91,13 @@ class TestModifiableRingBuffer(unittest.TestCase):
 
     def test_put_large_item(self):
         large_item = np.ones(self.buffer_size + 1, dtype=np.float32)  
-        with self.assertRaises(Full): 
+        with self.assertRaises(ValueError): 
             self.ring.put(large_item)  
 
     def test_put_large_item_qsize(self):
         large_item = np.ones(self.buffer_size + 1, dtype=np.float32)  
-        self.ring.put(large_item)  
+        with self.assertRaises(ValueError): 
+            self.ring.put(large_item)  
         self.assertEqual(self.ring.qsize(), 0)
 
     def test_different_shapes(self):
