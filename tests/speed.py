@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from ipc_tools import ModifiableRingBuffer 
 from multiprocessing.synchronize import Event as EventType
 
-NUM_PRODUCERS = 5
-NUM_CONSUMERS = 20
+NUM_PRODUCERS = 1
+NUM_CONSUMERS = 1
 BUFFER_SIZE_BYTES = 500 * 1024**2
 ITEM_SHAPE = (2048, 2048)
 DTYPE = np.float32
@@ -20,6 +20,7 @@ def producer(buffer: ModifiableRingBuffer, stop: EventType, stats: Queue):
         try:
             t0 = time.perf_counter()
             buffer.put(item)
+            time.sleep(1e-6) # leave some time for consumer
             t1 = time.perf_counter()
             times.append(t1 - t0)
         except Exception as e:
