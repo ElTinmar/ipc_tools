@@ -88,7 +88,7 @@ def run_test():
         print(f"  Count: {len(times)}")
         print(f"  Mean:  {np.mean(times)*1000:.3f} ms")
         print(f"  Std:   {np.std(times)*1000:.3f} ms")
-        print(f"  Rate:  {len(times)/RUNTIME_SEC:.2f} ops/sec\n")
+        print(f"  Rate:  {len(times)/RUNTIME_SEC:.2f} ops/sec")
         print(f"  Throughput:  {1e-6 * (len(times)*ITEM_SIZE_BYTES)/RUNTIME_SEC:.2f} MB/s\n")
 
     print("\n--- Performance Summary ---")
