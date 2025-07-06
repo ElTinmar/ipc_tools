@@ -13,7 +13,7 @@ ITEM_SHAPE = (2048, 2048)
 DTYPE = np.float32
 RUNTIME_SEC = 10
 LOGGING = False
-ITEM_SIZE_BYTES = np.prod(ITEM_SHAPE)*np.dtype(DTYPE).itemsize
+ITEM_SIZE_BYTES = np.prod(ITEM_SHAPE, dtype=np.float32) * np.dtype(DTYPE).itemsize
 
 def producer(buffer: ModifiableRingBuffer, stop: EventType, stats: Queue):
     times = []
@@ -89,7 +89,7 @@ def run_test():
         print(f"  Mean:  {np.mean(times)*1000:.3f} ms")
         print(f"  Std:   {np.std(times)*1000:.3f} ms")
         print(f"  Rate:  {len(times)/RUNTIME_SEC:.2f} ops/sec\n")
-        print(f"  Throughput:  {1e-6* (len(times)*ITEM_SIZE_BYTES)/RUNTIME_SEC:.2f} MB/s\n")
+        print(f"  Throughput:  {1e-6 * (len(times)*ITEM_SIZE_BYTES)/RUNTIME_SEC:.2f} MB/s\n")
 
     print("\n--- Performance Summary ---")
     summarize("Producer put()", put_times)
