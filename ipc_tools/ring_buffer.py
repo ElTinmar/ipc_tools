@@ -388,8 +388,6 @@ class ModifiableRingBuffer(QueueLike):
         self.semaphore.release()
         t_lock_released = time.perf_counter_ns() * 1e-6
 
-        time.sleep(0.00001) # This might not be necessary in real world, you don't spam put?
-
         if self.local_logger:
             self.local_logger.info(f'put, {t_start}, {t_lock_acquired}, {t_lock_released}')
 
