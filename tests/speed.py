@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from ipc_tools import ModifiableRingBuffer 
 from multiprocessing.synchronize import Event as EventType
 import sys
-from perf_bench import memory_bandwidth
+from perf_bench import single_threaded_memory_bandwidth
 
 NUM_PRODUCERS = 1
 NUM_CONSUMERS = 1
@@ -106,5 +106,5 @@ def run_test():
     plt.show()
 
 if __name__ == "__main__":
-    memory_bandwidth(array_shape = (4096, 4096)) # make sure bigger than L3 cache
+    single_threaded_memory_bandwidth(array_shape = (4096, 4096)) # make sure bigger than L3 cache
     run_test()
