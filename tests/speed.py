@@ -14,7 +14,7 @@ ITEM_SHAPE = (4096, 4096)
 DTYPE = np.float32
 RUNTIME_SEC = 10
 LOGGING = False
-ITEM_SIZE_BYTES = np.prod(ITEM_SHAPE, dtype=np.float32) * np.dtype(DTYPE).itemsize
+ITEM_SIZE_BYTES = np.prod(ITEM_SHAPE, dtype=np.float32) * np.dtype(DTYPE).itemsize # make sure bigger than L3 cache
 
 def producer(buffer: ModifiableRingBuffer, stop: EventType, stats: Queue):
     times = []
@@ -106,6 +106,6 @@ def run_test():
     plt.show()
 
 if __name__ == "__main__":
-    single_threaded_memory_bandwidth(array_shape = ITEM_SHAPE) # make sure bigger than L3 cache
+    single_threaded_memory_bandwidth(array_shape = ITEM_SHAPE) 
     multithreaded_memory_bandwidth(array_shape = ITEM_SHAPE, num_threads=4)
     run_test()
