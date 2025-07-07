@@ -119,10 +119,10 @@ class TestModifiableRingBuffer(unittest.TestCase):
             self.ring.get(block=False)
 
     def test_get_timeout(self):
-        start = time.monotonic()
+        start = time.perf_counter()
         with self.assertRaises(Empty):
             self.ring.get(timeout=0.1)
-        elapsed = time.monotonic() - start
+        elapsed = time.perf_counter() - start
         self.assertGreaterEqual(elapsed, 0.1)
 
     def test_qsize_tracking(self):

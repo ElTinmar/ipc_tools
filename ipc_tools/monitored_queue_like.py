@@ -74,12 +74,11 @@ class MonitoredQueue(QueueLike):
             self.num_item_in.value += 1
 
             if self.num_item_in.value == 1:
-                self.time_in_start.value = time.monotonic()
-                self.time_in.value = self.time_in_start.value
+                self.time_in_start.value = time.perf_counter()
                 return
 
             previous_time = self.time_in.value
-            self.time_in.value = time.monotonic() - self.time_in_start.value
+            self.time_in.value = time.perf_counter() - self.time_in_start.value
             self.freq_in.value = 1.0/(self.time_in.value - previous_time)
 
     def account_out(self) -> None:
@@ -87,12 +86,11 @@ class MonitoredQueue(QueueLike):
             self.num_item_out.value += 1
 
             if self.num_item_out.value == 1:
-                self.time_out_start.value = time.monotonic()
-                self.time_out.value = self.time_out_start.value
+                self.time_out_start.value = time.perf_counter()
                 return
 
             previous_time = self.time_out.value
-            self.time_out.value = time.monotonic() - self.time_out_start.value
+            self.time_out.value = time.perf_counter() - self.time_out_start.value
             self.freq_out.value = 1.0/(self.time_out.value - previous_time)
 
     def get_average_freq(self) -> Tuple[float, float]:
