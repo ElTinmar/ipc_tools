@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='ipc_tools',
     author='Martin Privat',
-    version='0.4.0',
+    version='0.4.1',
     packages=['ipc_tools'],
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     description='share numpy arrays between processes',
