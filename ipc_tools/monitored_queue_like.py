@@ -75,6 +75,7 @@ class MonitoredQueue(QueueLike):
 
             if self.num_item_in.value == 1:
                 self.time_in_start.value = time.monotonic()
+                self.time_in.value = self.time_in_start.value
                 return
 
             previous_time = self.time_in.value
@@ -87,6 +88,7 @@ class MonitoredQueue(QueueLike):
 
             if self.num_item_out.value == 1:
                 self.time_out_start.value = time.monotonic()
+                self.time_out.value = self.time_out_start.value
                 return
 
             previous_time = self.time_out.value
