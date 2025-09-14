@@ -41,7 +41,20 @@ class SelectableEvent:
     def is_set(self):
         with self._is_set.get_lock():
             return self._is_set.value
-
+    
+    def __del__(self):
+        try:
+            self._r.close()
+        except Exception:
+            pass
+        try:
+            self._w.close()
+        except Exception:
+            pass
+        try:
+            del self._is_set
+        except Exception:
+            pass
 
 def worker(ev, delay):
     time.sleep(delay)
