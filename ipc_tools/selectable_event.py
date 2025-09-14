@@ -7,26 +7,10 @@ class SelectableEvent:
     """A cross-platform selectable event using sockets."""
 
     def __init__(self):
-        self._r, self._w = self._create_socketpair()
+        self._r, self._w = socket.socketpair() # requires python >3.5 on Windows
         self._r.setblocking(False)
         self._w.setblocking(False)
         self._is_set = False
-
-    @staticmethod
-    def _create_socketpair():
-        """Create a socket pair cross-platform."""
-        if hasattr(socket, "socketpair"):
-            return socket.socketpair()
-        else:
-            # Windows workaround using loopback TCP
-            listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            listener.bind(('127.0.0.1', 0))
-            listener.listen(1)
-            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect(listener.getsockname())
-            server, _ = listener.accept()
-            listener.close()
-            return server, client
 
     def fileno(self):
         """Return the file descriptor for select/poll."""
