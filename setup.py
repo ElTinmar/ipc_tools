@@ -2,6 +2,7 @@ from distutils.core import setup
 
 setup(
     name='ipc_tools',
+    python_requires='>=3.8',
     author='Martin Privat',
     version='0.4.6',
     packages=['ipc_tools'],
@@ -12,7 +13,6 @@ setup(
         "numpy", 
         "pyzmq",
         "arrayqueues",
-        "opencv-python",
         "pandas",
         "seaborn",
         "tqdm",
