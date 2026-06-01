@@ -4,7 +4,7 @@ setup(
     name='ipc_tools',
     python_requires='>=3.8',
     author='Martin Privat',
-    version='0.4.7',
+    version='0.4.8',
     packages=['ipc_tools'],
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     description='share numpy arrays between processes',
@@ -18,6 +18,6 @@ setup(
         "tqdm",
         "matplotlib",
         "scipy",
-        "multiprocessing_logger @ git+https://github.com/ElTinmar/multiprocessing_logger.git@v0.3.12",
+        "multiprocessing_logger @ git+https://github.com/ElTinmar/multiprocessing_logger.git@v0.3.13",
     ]
 )
